@@ -11,7 +11,10 @@
       left: () => removeItem(index),
       right: () => swipe('Right'),
     }"
-      >{{data.content}}</li>
+      >
+        <div class="itemText">{{data.content}}</div>
+        <div class="itemClear" v-on:click="removeItem(index)">X</div>
+      </li>
     </ul>
 
     <div class="empty"/>
@@ -80,20 +83,45 @@ ul {
   margin-top: 10px;
   display: grid;
   grid-row-gap: 5px;
+  grid-template-columns: 100%;
   width: 100%;
   flex-shrink: 1;
-  overflow-y: auto;
+  overflow-x: none;
 }
-ul li {
-  display: inline-block;
+li {
+  display: flex;
   padding: 10px;
   margin-left: 10px;
   width: calc(100% - 50px);
   border-left: 20px solid indianred;
   background-color: coral;
-  font-size: 30px;
+  font-size: 32px;
   border-top-right-radius: 20px;
   border-bottom-right-radius: 20px;
+  text-overflow: wrap;
+}
+
+.itemText {
+  flex: 1 1 auto;
+  font-weight: bold;
+  color: #323333;
+}
+.itemClear {
+  background-color: #444444;
+  color: coral;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 5px;
+  height: 22px;
+  padding-top: 4px;
+  justify-content: center;
+  width: 27px;
+  margin: 5px 0px;
+}
+
+.itemClear:hover {
+  color: #323333;
+  background-color: coral;
 }
 
 input {
@@ -119,7 +147,13 @@ input {
   margin: 10px 0px;
   border-radius: 10px;
   padding: 10px;
+  font-weight: bold;
   font-size: 1.3em;
+  color: #323333;
   background-color: indianred;
+}
+
+.btnClear:hover {
+  background-color: rgb(204, 86, 86);
 }
 </style>
