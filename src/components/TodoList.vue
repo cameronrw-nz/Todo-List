@@ -5,15 +5,21 @@
     </form>
     <ul>
       <li
-        v-for="(data, index) in todoItems"
-        v-bind:key="index"
+        v-for="(todoItem, todoItemIndex) in todoItems"
+        v-bind:key="todoItemIndex"
+        v-bind:class="[todoItem.isComplete ? 'clicked' : '']"
+        v-on:click="completeItem(todoItemIndex)"
         v-touch="{
-      left: () => removeItem(index),
-      right: () => swipe('Right'),
-    }"
+            left: () => removeItem(todoItemIndex),
+            right: () => swipe('Right'),
+            }"
       >
-        <div class="itemText">{{data.content}}</div>
-        <div class="itemClear" v-on:click="removeItem(index)">X</div>
+        <div class="itemText">{{todoItem.content}}</div>
+        <div
+          class="itemClear"
+          v-bind:class="[todoItem.isComplete ? 'clicked' : '']"
+          v-on:click="removeItem(todoItemIndex)"
+        >X</div>
       </li>
     </ul>
 
@@ -61,6 +67,15 @@ export default {
       this.todoItems =
         JSON.parse(window.localStorage.getItem("todoItems")) || [];
     },
+    completeItem(index) {
+      let todoItems =
+        JSON.parse(window.localStorage.getItem("todoItems")) || [];
+      todoItems[index].isComplete = !todoItems[index].isComplete;
+
+      window.localStorage.setItem("todoItems", JSON.stringify(todoItems));
+      this.todoItems =
+        JSON.parse(window.localStorage.getItem("todoItems")) || [];
+    },
     clearAll() {
       window.localStorage.clear("todoItems");
       this.todoItems =
@@ -99,6 +114,15 @@ li {
   border-top-right-radius: 20px;
   border-bottom-right-radius: 20px;
   text-overflow: wrap;
+}
+
+.clicked {
+  background-color: aqua;
+  border-left-color: blue;
+}
+
+.itemClear.clicked {
+  color: aqua;
 }
 
 .itemText {
