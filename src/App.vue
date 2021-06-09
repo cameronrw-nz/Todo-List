@@ -26,6 +26,7 @@ export default {
   display: flex;
   justify-content: center;
   align-content: center;
+  overflow: auto;
 }
 
 html,

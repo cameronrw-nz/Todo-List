@@ -5,7 +5,7 @@
     </form>
     <ul>
       <li
-        v-for="(todoItem, todoItemIndex) in todoItems"
+        v-for="(todoItem, todoItemIndex) in todo.todoItems"
         v-bind:key="todoItemIndex"
         v-bind:class="[todoItem.isComplete ? 'clicked' : '']"
         v-on:click="completeItem(todoItemIndex)"
@@ -22,6 +22,29 @@
         >X</div>
       </li>
     </ul>
+    <ul 
+        v-for="(completedItem) in todo.completedItems"
+        v-bind:key="completedItem.date"
+    >
+        <h2>{{completedItem.date}}</h2>
+      <li
+        v-for="(todoItem, todoItemIndex) in completedItem.items"
+        v-bind:key="todoItemIndex"
+        v-bind:class="[todoItem.isComplete ? 'clicked' : '']"
+        v-on:click="completeItem(todoItemIndex, completedItem.date)"
+        v-touch="{
+            left: () => removeItem(todoItemIndex, completedItem.date),
+            right: () => swipe('Right'),
+            }"
+      >
+        <div class="itemText">{{todoItem.content}}</div>
+        <div
+          class="itemClear"
+          v-bind:class="[todoItem.isComplete ? 'clicked' : '']"
+          v-on:click="removeItem(todoItemIndex, completedItem.date)"
+        >X</div>
+      </li>
+    </ul>
 
     <div class="empty"/>
 
@@ -35,47 +58,88 @@ export default {
   data() {
     return {
       todoItem: "",
-      todoItems: []
+      todo: {todoItems: []}
     };
   },
   created: function() {
-    this.todoItems = JSON.parse(window.localStorage.getItem("todoItems")) || [];
+    this.todo = JSON.parse(window.localStorage.getItem("todoItems")) || [];
   },
   methods: {
     addItem() {
       if (this.todoItem.length === 0) {
         return;
       }
-      const todoItems =
+      const todo =
         JSON.parse(window.localStorage.getItem("todoItems")) || [];
-      todoItems.push({
+      todo.todoItems.push({
         content: this.todoItem
       });
 
       this.todoItem = "";
 
-      window.localStorage.setItem("todoItems", JSON.stringify(todoItems));
-      this.todoItems =
+      window.localStorage.setItem("todoItems", JSON.stringify(todo));
+      this.todo =
         JSON.parse(window.localStorage.getItem("todoItems")) || [];
     },
-    removeItem(index) {
-      let todoItems =
-        JSON.parse(window.localStorage.getItem("todoItems")) || [];
-      todoItems.splice(index, 1);
 
-      window.localStorage.setItem("todoItems", JSON.stringify(todoItems));
-      this.todoItems =
+    removeItem(index, completedAt) {
+      let todo =
         JSON.parse(window.localStorage.getItem("todoItems")) || [];
-    },
-    completeItem(index) {
-      let todoItems =
-        JSON.parse(window.localStorage.getItem("todoItems")) || [];
-      todoItems[index].isComplete = !todoItems[index].isComplete;
+        if (completedAt) {
+            todo.completedItems.forEach(completed => {
+                if (completed.date ===completedAt) {
+                    completed.items.splice(index, 1);
+                }
+            })
+        }
+        else {
+            todo.todoItems.splice(index, 1)
+        }
 
-      window.localStorage.setItem("todoItems", JSON.stringify(todoItems));
-      this.todoItems =
+      window.localStorage.setItem("todoItems", JSON.stringify(todo));
+      this.todo =
         JSON.parse(window.localStorage.getItem("todoItems")) || [];
     },
+
+    completeItem(index, completedAt) {
+      let todo =
+        JSON.parse(window.localStorage.getItem("todoItems")) || [];
+        if (completedAt) {
+            todo.completedItems.forEach(completed => {
+                if (completed.date ===completedAt) {
+                    const item = completed.items.splice(index, 1)[0]
+
+                    item.isComplete = false
+                    item.completedAt = undefined
+
+                    todo.todoItems.push(item)
+                }
+            })
+        }
+        else {
+            const item = todo.todoItems.splice(index, 1)[0];
+            item.isComplete = true;
+            item.completedAt = new Date().toISOString();
+
+            const date = new Date();
+            const options = { year: 'numeric', month: 'numeric', day: 'numeric' };
+            const newCompletedAt = date.toLocaleDateString("en-NZ", options);
+
+            const completed = todo.completedItems.find(comp => newCompletedAt === comp.date);
+            if (completed) {
+                completed.items.push(item)
+            }
+            else {
+                todo.completedItems.splice(0, 0, {date: newCompletedAt, items: [item]})
+            }
+        }
+
+      
+      window.localStorage.setItem("todoItems", JSON.stringify(todo));
+      this.todo =
+        JSON.parse(window.localStorage.getItem("todoItems")) || [];
+    },
+
     clearAll() {
       window.localStorage.clear("todoItems");
       this.todoItems =
@@ -91,6 +155,7 @@ export default {
   width: 90%;
   display: flex;
   flex-direction: column;
+  overflow: auto;
 }
 ul {
   list-style-type: none;
@@ -116,13 +181,17 @@ li {
   text-overflow: wrap;
 }
 
+h2 {
+    color: white;
+}
+
 .clicked {
-  background-color: aqua;
-  border-left-color: blue;
+  background-color: darkseagreen;
+  border-left-color: teal;
 }
 
 .itemClear.clicked {
-  color: aqua;
+  color: darkseagreen;
 }
 
 .itemText {
