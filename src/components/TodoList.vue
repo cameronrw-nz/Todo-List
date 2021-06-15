@@ -76,8 +76,14 @@ export default {
       if (this.todoItem.length === 0) {
         return;
       }
-      const todo =
+      let todo =
         JSON.parse(window.localStorage.getItem("todoItems")) || [];
+
+      if (!todo || !todo.todoItems) {
+          todo = {
+              todoItems: []
+          }
+      }
       todo.todoItems.push({
         content: this.todoItem
       });
@@ -142,6 +148,9 @@ export default {
             const options = { year: 'numeric', month: 'numeric', day: 'numeric' };
             const newCompletedAt = date.toLocaleDateString("en-NZ", options);
 
+            if (!todo.completedItems) {
+                todo.completedItems = [];
+            }
             const completed = todo.completedItems.find(comp => newCompletedAt === comp.date);
             if (completed) {
                 completed.items.push(item)
