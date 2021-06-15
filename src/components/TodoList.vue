@@ -7,7 +7,7 @@
       <li
         v-for="(todoItem, todoItemIndex) in todo.todoItems"
         v-bind:key="todoItemIndex"
-        v-bind:class="[todoItem.isComplete ? 'clicked' : '']"
+        v-bind:class="[todoItem.inprogress ? 'in-progress' : '']"
         v-on:click="completeItem(todoItemIndex)"
         v-touch="{
             left: () => removeItem(todoItemIndex),
@@ -16,9 +16,16 @@
       >
         <div class="itemText">{{todoItem.content}}</div>
         <div
+          class="itemClear toggle-progress"
+          v-bind:class="[todoItem.inprogress ? 'in-progress' : '']"
+          v-on:click.stop="toggleProgress(todoItemIndex)"
+        >
+            {{todoItem.inprogress ? "-" : "+"}}
+        </div>
+        <div
           class="itemClear"
-          v-bind:class="[todoItem.isComplete ? 'clicked' : '']"
-          v-on:click="removeItem(todoItemIndex)"
+          v-bind:class="[todoItem.inprogress ? 'in-progress'  : '']"
+          v-on:click.stop="removeItem(todoItemIndex)"
         >X</div>
       </li>
     </ul>
@@ -41,7 +48,7 @@
         <div
           class="itemClear"
           v-bind:class="[todoItem.isComplete ? 'clicked' : '']"
-          v-on:click="removeItem(todoItemIndex, completedItem.date)"
+          v-on:click.stop="removeItem(todoItemIndex, completedItem.date)"
         >X</div>
       </li>
     </ul>
@@ -95,6 +102,16 @@ export default {
         else {
             todo.todoItems.splice(index, 1)
         }
+
+      window.localStorage.setItem("todoItems", JSON.stringify(todo));
+      this.todo =
+        JSON.parse(window.localStorage.getItem("todoItems")) || [];
+    },
+
+    toggleProgress(index) {
+      let todo =
+        JSON.parse(window.localStorage.getItem("todoItems")) || [];
+      todo.todoItems[index].inprogress = !todo.todoItems[index].inprogress
 
       window.localStorage.setItem("todoItems", JSON.stringify(todo));
       this.todo =
@@ -155,7 +172,6 @@ export default {
   width: 90%;
   display: flex;
   flex-direction: column;
-  overflow: auto;
 }
 ul {
   list-style-type: none;
@@ -190,8 +206,26 @@ h2 {
   border-left-color: teal;
 }
 
+.in-progress {
+  background-color: lightblue;
+  border-left-color: darkblue;
+}
+
 .itemClear.clicked {
   color: darkseagreen;
+}
+.itemClear.clicked:hover {
+  color: #323333;
+  background-color: darkseagreen;
+}
+
+
+.itemClear.in-progress {
+  color: lightblue;
+}
+.itemClear.in-progress:hover {
+  color: #323333;
+  background-color: lightblue;
 }
 
 .itemText {
@@ -215,6 +249,10 @@ h2 {
 .itemClear:hover {
   color: #323333;
   background-color: coral;
+}
+
+.toggle-progress {
+    margin-right: 8px;
 }
 
 input {
